@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"; 
 
 function Register() {
-
     const navigate = useNavigate();
-
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -17,18 +16,26 @@ function Register() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-
 
         if (formData.password !== formData.confirmPassword) {
             setError("Passwords do not match!");
             return;
-        } else {
-            setError("");
-            console.log("Form Submitted:", formData);
-            alert("Registration successful!");
-            navigate("/");
+        }
+
+        try {
+            const response = await axios.post("http://localhost:5000/register", {
+                email: formData.email,
+                password: formData.password,
+            });
+
+            if (response.status === 201) {
+                alert("Registration successful!");
+                navigate("/");
+            }
+        } catch (error) {
+            setError(error.response?.data?.message || "Registration failed!");
         }
     };
 
@@ -42,7 +49,6 @@ function Register() {
                 {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
                 <form onSubmit={handleSubmit} className="flex flex-col">
-
                     <label className="text-gray-600 font-medium mb-1">Email:</label>
                     <input
                         type="email"
